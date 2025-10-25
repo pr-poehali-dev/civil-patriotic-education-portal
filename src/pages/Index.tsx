@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import Icon from '@/components/ui/icon';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import Quiz from '@/components/Quiz';
 
 interface HistoricalEvent {
   id: number;
@@ -99,6 +100,9 @@ const Index = () => {
   const [selectedEvent, setSelectedEvent] = useState<HistoricalEvent | null>(null);
   const [discoveredEvents, setDiscoveredEvents] = useState<number[]>([]);
   const [score, setScore] = useState(0);
+  const [isQuizActive, setIsQuizActive] = useState(false);
+  const [quizCompleted, setQuizCompleted] = useState(false);
+  const [quizScore, setQuizScore] = useState(0);
 
   const handleEventClick = (event: HistoricalEvent) => {
     setSelectedEvent(event);
@@ -106,6 +110,19 @@ const Index = () => {
       setDiscoveredEvents([...discoveredEvents, event.id]);
       setScore(score + event.points);
     }
+  };
+
+  const handleQuizComplete = (finalScore: number) => {
+    setQuizScore(finalScore);
+    setScore(score + finalScore);
+    setQuizCompleted(true);
+    setIsQuizActive(false);
+  };
+
+  const startQuiz = () => {
+    setIsQuizActive(true);
+    setQuizCompleted(false);
+    setQuizScore(0);
   };
 
   const progress = (discoveredEvents.length / historicalEvents.length) * 100;
@@ -327,19 +344,46 @@ const Index = () => {
 
         {activeTab === 'games' && (
           <div className="animate-scale-in">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <Card className="p-6 hover-scale cursor-pointer bg-gradient-to-br from-purple-100 to-pink-100">
-                <div className="text-center">
-                  <div className="w-20 h-20 mx-auto mb-4 rounded-2xl bg-white flex items-center justify-center text-4xl shadow-lg">
-                    🎯
+            {isQuizActive ? (
+              <Quiz onComplete={handleQuizComplete} />
+            ) : quizCompleted ? (
+              <Card className="p-8 max-w-2xl mx-auto text-center mb-6">
+                <div className="mb-6">
+                  <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-5xl shadow-2xl">
+                    🏆
                   </div>
-                  <h3 className="text-xl font-bold mb-2">Викторина</h3>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Проверь свои знания истории в увлекательной викторине
-                  </p>
-                  <Badge variant="secondary">Скоро</Badge>
+                  <h2 className="text-3xl font-bold mb-2">Викторина пройдена!</h2>
+                  <p className="text-muted-foreground mb-6">Отличная работа! Вы заработали баллы!</p>
+                  <div className="bg-gradient-to-r from-primary/10 to-secondary/10 p-6 rounded-2xl border-2 border-primary/20 mb-6">
+                    <div className="text-5xl font-bold text-primary mb-2">+{quizScore}</div>
+                    <div className="text-lg text-muted-foreground">Баллов заработано</div>
+                  </div>
+                  <div className="flex gap-3 justify-center">
+                    <Button onClick={startQuiz} size="lg" className="hover-scale">
+                      <Icon name="RotateCcw" className="mr-2" size={20} />
+                      Пройти ещё раз
+                    </Button>
+                    <Button onClick={() => setActiveTab('map')} variant="outline" size="lg" className="hover-scale">
+                      <Icon name="Map" className="mr-2" size={20} />
+                      К карте
+                    </Button>
+                  </div>
                 </div>
               </Card>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <Card onClick={startQuiz} className="p-6 hover-scale cursor-pointer bg-gradient-to-br from-purple-100 to-pink-100 border-2 border-primary/30">
+                  <div className="text-center">
+                    <div className="w-20 h-20 mx-auto mb-4 rounded-2xl bg-white flex items-center justify-center text-4xl shadow-lg">
+                      🎯
+                    </div>
+                    <h3 className="text-xl font-bold mb-2">Викторина</h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Проверь свои знания истории в увлекательной викторине
+                    </p>
+                    <Badge className="bg-primary text-white">Играть сейчас!</Badge>
+                  </div>
+                </Card>
 
               <Card className="p-6 hover-scale cursor-pointer bg-gradient-to-br from-blue-100 to-cyan-100">
                 <div className="text-center">
@@ -393,19 +437,20 @@ const Index = () => {
                 </div>
               </Card>
 
-              <Card className="p-6 hover-scale cursor-pointer bg-gradient-to-br from-indigo-100 to-violet-100">
-                <div className="text-center">
-                  <div className="w-20 h-20 mx-auto mb-4 rounded-2xl bg-white flex items-center justify-center text-4xl shadow-lg">
-                    👥
+                <Card className="p-6 hover-scale cursor-pointer bg-gradient-to-br from-indigo-100 to-violet-100">
+                  <div className="text-center">
+                    <div className="w-20 h-20 mx-auto mb-4 rounded-2xl bg-white flex items-center justify-center text-4xl shadow-lg">
+                      👥
+                    </div>
+                    <h3 className="text-xl font-bold mb-2">Личности</h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Угадай исторических деятелей по описанию
+                    </p>
+                    <Badge variant="secondary">Скоро</Badge>
                   </div>
-                  <h3 className="text-xl font-bold mb-2">Личности</h3>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Угадай исторических деятелей по описанию
-                  </p>
-                  <Badge variant="secondary">Скоро</Badge>
-                </div>
-              </Card>
-            </div>
+                </Card>
+              </div>
+            )}
           </div>
         )}
       </div>
